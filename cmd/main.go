@@ -1,24 +1,27 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/crgimenes/goconfig"
+	"github.com/gosidekick/migration"
 )
 
-func main() {
-	config := struct {
-		Database string `cfg:"db" crgRequired:"true" cfgHelper:""`
-		Source   string `cfg:"source" crgRequired:"true" cfgHelper:""`
-		Migrate  string `cfg:"migrate" crgRequired:"true" cfgHelper:""`
-	}{}
+type config struct {
+	Database string `cfg:"db" cfgRequired:"true"`
+	Source   string `cfg:"source" cfgRequired:"true"`
+	Migrate  string `cfg:"migrate" cfgRequired:"true"`
+}
 
-	err := goconfig.Parse(&config)
+func main() {
+	cfg := config{}
+
+	err := goconfig.Parse(&cfg)
 	if err != nil {
-		println(err)
+		println(err.Error())
 		return
 	}
 
-	fmt.Println(config)
-
+	err = migration.Run(cfg.Source, cfg.Database, cfg.Migrate)
+	if err != nil {
+		println(err.Error())
+	}
 }

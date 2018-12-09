@@ -1,6 +1,7 @@
 package migration
 
 import (
+	"fmt"
 	"path/filepath"
 )
 
@@ -15,5 +16,16 @@ func upFiles(dir string) (files []string, err error) {
 // a sorted array with the path of all found files
 func downFiles(dir string) (files []string, err error) {
 	files, err = filepath.Glob(filepath.Join(dir, "*.down.sql"))
+	return
+}
+
+func Run(source, database, migrate string) (err error) {
+	files, err := upFiles(source)
+	if err != nil {
+		return
+	}
+	for _, f := range files {
+		fmt.Println(f)
+	}
 	return
 }
