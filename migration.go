@@ -52,8 +52,13 @@ func exec(files []string, start, n int, db *sqlx.DB) (err error) {
 	for _, f := range files[start:n] {
 		var b []byte
 		b, err = ioutil.ReadFile(f)
-		fmt.Println(f)
-		fmt.Println(string(b))
+		if err != nil {
+			return
+		}
+		_, err = db.Exec(string(b))
+		if err != nil {
+			return
+		}
 	}
 	return
 }
