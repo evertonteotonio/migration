@@ -3,6 +3,7 @@ package migration
 import (
 	"fmt"
 	"path/filepath"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -18,6 +19,7 @@ func upFiles(dir string) (files []string, err error) {
 // a sorted array with the path of all found files
 func downFiles(dir string) (files []string, err error) {
 	files, err = filepath.Glob(filepath.Join(dir, "*.down.sql"))
+	sort.Sort(sort.Reverse(sort.StringSlice(files)))
 	return
 }
 
@@ -36,7 +38,16 @@ func up(source string, start, n int) (err error) {
 }
 
 func down(source string, start, n int) (err error) {
-	fmt.Println("down", n)
+	files, err := downFiles(source)
+	if err != nil {
+		return
+	}
+	if n == 0 {
+		n = len(files) - start
+	}
+	for _, f := range files[start:n] {
+		fmt.Println(f)
+	}
 	return
 }
 
