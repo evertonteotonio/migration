@@ -40,6 +40,7 @@ func down(source string, n int) (err error) {
 }
 
 func Run(source, database, migrate string) (err error) {
+	var n int
 	m := strings.Split(migrate, " ")
 	if len(m) > 2 {
 		err = fmt.Errorf("the number of migration parameters is incorrect")
@@ -47,27 +48,30 @@ func Run(source, database, migrate string) (err error) {
 	}
 	switch m[0] {
 	case "up":
-		var n int
-		if len(m) > 1 {
-			n, err = strconv.Atoi(m[1])
-			if err != nil {
-				err = fmt.Errorf("invalid syntax")
-				return
-			}
+		n, err = parsePar(m)
+		if err != nil {
+			return
 		}
 		err = up(source, n)
 	case "down":
-		var n int
-		if len(m) > 1 {
-			n, err = strconv.Atoi(m[1])
-			if err != nil {
-				err = fmt.Errorf("invalid syntax")
-				return
-			}
+		n, err = parsePar(m)
+		if err != nil {
+			return
 		}
 		err = down(source, n)
 	default:
 		err = fmt.Errorf("unknown migration command")
+	}
+	return
+}
+
+func parsePar(m []string) (n int, err error) {
+	if len(m) > 1 {
+		n, err = strconv.Atoi(m[1])
+		if err != nil {
+			err = fmt.Errorf("invalid syntax")
+			return
+		}
 	}
 	return
 }
