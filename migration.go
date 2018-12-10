@@ -21,27 +21,28 @@ func downFiles(dir string) (files []string, err error) {
 	return
 }
 
-func up(source string, n int) (err error) {
-	fmt.Println("up", n)
-
+func up(source string, start, n int) (err error) {
 	files, err := upFiles(source)
 	if err != nil {
 		return
 	}
-	for _, f := range files {
+	if n == 0 {
+		n = len(files) - start
+	}
+	for _, f := range files[start:n] {
 		fmt.Println(f)
 	}
 	return
 }
 
-func down(source string, n int) (err error) {
+func down(source string, start, n int) (err error) {
 	fmt.Println("down", n)
 	return
 }
 
 // Run parse and performs the required migration
 func Run(source, database, migrate string) (err error) {
-	var n int
+	var start, n int
 	m := strings.Split(migrate, " ")
 	if len(m) > 2 {
 		err = fmt.Errorf("the number of migration parameters is incorrect")
@@ -53,13 +54,13 @@ func Run(source, database, migrate string) (err error) {
 		if err != nil {
 			return
 		}
-		err = up(source, n)
+		err = up(source, start, n)
 	case "down":
 		n, err = parsePar(m)
 		if err != nil {
 			return
 		}
-		err = down(source, n)
+		err = down(source, start, n)
 	default:
 		err = fmt.Errorf("unknown migration command")
 	}
