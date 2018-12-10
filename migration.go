@@ -51,6 +51,17 @@ func exec(files []string, start, n int) (err error) {
 	return
 }
 
+func parsePar(m []string) (n int, err error) {
+	if len(m) > 1 {
+		n, err = strconv.Atoi(m[1])
+		if err != nil {
+			err = fmt.Errorf("invalid syntax")
+			return
+		}
+	}
+	return
+}
+
 // Run parse and performs the required migration
 func Run(source, database, migrate string) (err error) {
 	var start, n int
@@ -74,17 +85,6 @@ func Run(source, database, migrate string) (err error) {
 		err = down(source, start, n)
 	default:
 		err = fmt.Errorf("unknown migration command")
-	}
-	return
-}
-
-func parsePar(m []string) (n int, err error) {
-	if len(m) > 1 {
-		n, err = strconv.Atoi(m[1])
-		if err != nil {
-			err = fmt.Errorf("invalid syntax")
-			return
-		}
 	}
 	return
 }
