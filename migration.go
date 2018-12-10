@@ -41,19 +41,29 @@ func down(source string, n int) (err error) {
 
 func Run(source, database, migrate string) (err error) {
 	m := strings.Split(migrate, " ")
+	if len(m) > 2 {
+		err = fmt.Errorf("the number of migration parameters is incorrect")
+		return
+	}
 	switch m[0] {
 	case "up":
 		var n int
-		n, err = strconv.Atoi(m[1])
-		if err != nil {
-			return
+		if len(m) > 1 {
+			n, err = strconv.Atoi(m[1])
+			if err != nil {
+				err = fmt.Errorf("invalid syntax")
+				return
+			}
 		}
 		err = up(source, n)
 	case "down":
 		var n int
-		n, err = strconv.Atoi(m[1])
-		if err != nil {
-			return
+		if len(m) > 1 {
+			n, err = strconv.Atoi(m[1])
+			if err != nil {
+				err = fmt.Errorf("invalid syntax")
+				return
+			}
 		}
 		err = down(source, n)
 	default:
