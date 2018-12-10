@@ -2,10 +2,14 @@ package migration
 
 import (
 	"fmt"
+	"io/ioutil"
 	"path/filepath"
 	"sort"
 	"strconv"
 	"strings"
+
+	"github.com/jmoiron/sqlx"
+	_ "github.com/lib/pq"
 )
 
 // upFiles search for migration up files and return
@@ -23,30 +27,33 @@ func downFiles(dir string) (files []string, err error) {
 	return
 }
 
-func up(source string, start, n int) (err error) {
+func up(source string, start, n int, db *sqlx.DB) (err error) {
 	files, err := upFiles(source)
 	if err != nil {
 		return
 	}
-	err = exec(files, start, n)
+	err = exec(files, start, n, db)
 	return
 }
 
-func down(source string, start, n int) (err error) {
+func down(source string, start, n int, db *sqlx.DB) (err error) {
 	files, err := downFiles(source)
 	if err != nil {
 		return
 	}
-	err = exec(files, start, n)
+	err = exec(files, start, n, db)
 	return
 }
 
-func exec(files []string, start, n int) (err error) {
+func exec(files []string, start, n int, db *sqlx.DB) (err error) {
 	if n == 0 {
 		n = len(files)
 	}
 	for _, f := range files[start:n] {
+		var b []byte
+		b, err = ioutil.ReadFile(f)
 		fmt.Println(f)
+		fmt.Println(string(b))
 	}
 	return
 }
@@ -65,6 +72,13 @@ func parsePar(m []string) (n int, err error) {
 // Run parse and performs the required migration
 func Run(source, database, migrate string) (err error) {
 	var start, n int
+
+	//"postgres://postgres@localhost:5432/cesar?sslmode=disable")
+	db, err := Open(database)
+	if err != nil {
+		return
+	}
+
 	m := strings.Split(migrate, " ")
 	if len(m) > 2 {
 		err = fmt.Errorf("the number of migration parameters is incorrect")
@@ -76,15 +90,28 @@ func Run(source, database, migrate string) (err error) {
 		if err != nil {
 			return
 		}
-		err = up(source, start, n)
+		err = up(source, start, n, db)
 	case "down":
 		n, err = parsePar(m)
 		if err != nil {
 			return
 		}
-		err = down(source, start, n)
+		err = down(source, start, n, db)
 	default:
 		err = fmt.Errorf("unknown migration command")
+	}
+	return
+}
+
+func Open(database string) (db *sqlx.DB, err error) {
+	db, err = sqlx.Open("postgres", database)
+	if err != nil {
+		err = fmt.Errorf("error open db: %v", err)
+		return
+	}
+	err = db.Ping()
+	if err != nil {
+		err = fmt.Errorf("error ping db: %v", err)
 	}
 	return
 }
