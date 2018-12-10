@@ -149,7 +149,7 @@ func migrationMax(db *sqlx.DB) (m int, err error) {
 	s := struct {
 		Max int `db:"m"`
 	}{}
-	err = db.Get(&s, `SELECT max("version") AS m FORM schema_migrations`)
+	err = db.Get(&s, `SELECT max("version") AS m FROM schema_migrations`)
 	m = s.Max
 	return
 }
