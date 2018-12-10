@@ -39,6 +39,7 @@ func down(source string, n int) (err error) {
 	return
 }
 
+// Run parse and performs the required migration
 func Run(source, database, migrate string) (err error) {
 	var n int
 	m := strings.Split(migrate, " ")
