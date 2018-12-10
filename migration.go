@@ -43,7 +43,7 @@ func down(source string, start, n int) (err error) {
 
 func exec(files []string, start, n int) (err error) {
 	if n == 0 {
-		n = len(files) - start
+		n = len(files)
 	}
 	for _, f := range files[start:n] {
 		fmt.Println(f)
