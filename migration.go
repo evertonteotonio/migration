@@ -51,7 +51,7 @@ func exec(files []string, start, n int, db *sqlx.DB) (err error) {
 	}
 	for _, f := range files[start:n] {
 		var b []byte
-		b, err = ioutil.ReadFile(f)
+		b, err = ioutil.ReadFile(f) // nolint
 		if err != nil {
 			return
 		}
