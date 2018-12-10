@@ -28,12 +28,7 @@ func up(source string, start, n int) (err error) {
 	if err != nil {
 		return
 	}
-	if n == 0 {
-		n = len(files) - start
-	}
-	for _, f := range files[start:n] {
-		fmt.Println(f)
-	}
+	err = exec(files, start, n)
 	return
 }
 
@@ -42,6 +37,11 @@ func down(source string, start, n int) (err error) {
 	if err != nil {
 		return
 	}
+	err = exec(files, start, n)
+	return
+}
+
+func exec(files []string, start, n int) (err error) {
 	if n == 0 {
 		n = len(files) - start
 	}
