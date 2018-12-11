@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/jmoiron/sqlx"
-	_ "github.com/lib/pq"
+	_ "github.com/lib/pq" // nolint
 )
 
 // upFiles search for migration up files and return
