@@ -21,9 +21,10 @@ func upFiles(dir string) (files []string, err error) {
 
 // downFiles search for migration down files and return
 // a sorted array with the path of all found files
-func downFiles(dir string) (files []string, err error) {
+func downFiles(dir string, n int) (files []string, err error) {
 	files, err = filepath.Glob(filepath.Join(dir, "*.down.sql"))
 	sort.Sort(sort.Reverse(sort.StringSlice(files)))
+	files = files[len(files)-n:]
 	return
 }
 
@@ -37,7 +38,11 @@ func up(source string, start, n int, db *sqlx.DB) (err error) {
 }
 
 func down(source string, start, n int, db *sqlx.DB) (err error) {
-	files, err := downFiles(source)
+	nfiles, err := migrationMax(db)
+	if err != nil {
+		return
+	}
+	files, err := downFiles(source, nfiles)
 	if err != nil {
 		return
 	}
@@ -46,13 +51,17 @@ func down(source string, start, n int, db *sqlx.DB) (err error) {
 }
 
 func execDown(files []string, start, n int, db *sqlx.DB) (err error) {
-	i := n
+	i := len(files)
+	if i == 0 {
+		return
+	}
 	for _, f := range files[start:n] {
 		var b []byte
 		b, err = ioutil.ReadFile(f) // nolint
 		if err != nil {
 			return
 		}
+		fmt.Println(string(b))
 		_, err = db.Exec(string(b))
 		if err != nil {
 			return
@@ -77,6 +86,7 @@ func execUp(files []string, start, n int, db *sqlx.DB) (err error) {
 		if err != nil {
 			return
 		}
+		fmt.Println(string(b))
 		_, err = db.Exec(string(b))
 		if err != nil {
 			return
@@ -131,13 +141,12 @@ func Run(source, database, migrate string) (err error) {
 		}
 		err = up(source, start, n, db)
 	case "down":
-		//n, err = parsePar(m)
-		//if err != nil {
-		//	return
-		//}
-		n, err = migrationMax(db)
+		n, err = parsePar(m)
 		if err != nil {
 			return
+		}
+		if n == 0 {
+			n++
 		}
 		err = down(source, 0, n, db)
 	default:
