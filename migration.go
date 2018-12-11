@@ -61,7 +61,6 @@ func execDown(files []string, start, n int, db *sqlx.DB) (err error) {
 		if err != nil {
 			return
 		}
-		fmt.Println(string(b))
 		_, err = db.Exec(string(b))
 		if err != nil {
 			return
@@ -86,7 +85,6 @@ func execUp(files []string, start, n int, db *sqlx.DB) (err error) {
 		if err != nil {
 			return
 		}
-		fmt.Println(string(b))
 		_, err = db.Exec(string(b))
 		if err != nil {
 			return
