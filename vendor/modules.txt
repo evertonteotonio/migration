@@ -1,0 +1,12 @@
+# github.com/crgimenes/goconfig v1.2.1
+github.com/crgimenes/goconfig
+github.com/crgimenes/goconfig/goenv
+github.com/crgimenes/goconfig/goflags
+github.com/crgimenes/goconfig/validate
+github.com/crgimenes/goconfig/structtag
+# github.com/jmoiron/sqlx v1.2.0
+github.com/jmoiron/sqlx
+github.com/jmoiron/sqlx/reflectx
+# github.com/lib/pq v1.0.0
+github.com/lib/pq
+github.com/lib/pq/oid
