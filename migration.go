@@ -32,7 +32,7 @@ func up(source string, start, n int, db *sqlx.DB) (err error) {
 	if err != nil {
 		return
 	}
-	err = exec(files, start, n, db)
+	err = execUp(files, start, n, db)
 	return
 }
 
@@ -41,14 +41,12 @@ func down(source string, start, n int, db *sqlx.DB) (err error) {
 	if err != nil {
 		return
 	}
-	err = exec(files, start, n, db)
+	err = execDown(files, start, n, db)
 	return
 }
 
-func exec(files []string, start, n int, db *sqlx.DB) (err error) {
-	if n == 0 {
-		n = len(files)
-	}
+func execDown(files []string, start, n int, db *sqlx.DB) (err error) {
+	i := n
 	for _, f := range files[start:n] {
 		var b []byte
 		b, err = ioutil.ReadFile(f) // nolint
@@ -56,6 +54,35 @@ func exec(files []string, start, n int, db *sqlx.DB) (err error) {
 			return
 		}
 		_, err = db.Exec(string(b))
+		if err != nil {
+			return
+		}
+		err = deleteMigrations(i, db)
+		if err != nil {
+			return
+		}
+		i--
+	}
+	return
+}
+
+func execUp(files []string, start, n int, db *sqlx.DB) (err error) {
+	if n == 0 {
+		n = len(files)
+	}
+	i := start
+	for _, f := range files[start:n] {
+		var b []byte
+		b, err = ioutil.ReadFile(f) // nolint
+		if err != nil {
+			return
+		}
+		_, err = db.Exec(string(b))
+		if err != nil {
+			return
+		}
+		i++
+		err = insertMigrations(i, db)
 		if err != nil {
 			return
 		}
@@ -98,13 +125,21 @@ func Run(source, database, migrate string) (err error) {
 		if err != nil {
 			return
 		}
-		err = up(source, start, n, db)
-	case "down":
-		n, err = parsePar(m)
+		start, err = migrationMax(db)
 		if err != nil {
 			return
 		}
-		err = down(source, start, n, db)
+		err = up(source, start, n, db)
+	case "down":
+		//n, err = parsePar(m)
+		//if err != nil {
+		//	return
+		//}
+		n, err = migrationMax(db)
+		if err != nil {
+			return
+		}
+		err = down(source, 0, n, db)
 	default:
 		err = fmt.Errorf("unknown migration command")
 	}
@@ -130,6 +165,12 @@ func insertMigrations(n int, db *sqlx.DB) (err error) {
 	return
 }
 
+func deleteMigrations(n int, db *sqlx.DB) (err error) {
+	sql := `DELETE FROM schema_migrations WHERE "version"=$1`
+	_, err = db.Exec(sql, n)
+	return
+}
+
 func schemaMigrationsExists(db *sqlx.DB) (b bool, err error) {
 	s := struct {
 		Select interface{} `db:"s"`
@@ -149,7 +190,7 @@ func migrationMax(db *sqlx.DB) (m int, err error) {
 	s := struct {
 		Max int `db:"m"`
 	}{}
-	err = db.Get(&s, `SELECT max("version") AS m FROM schema_migrations`)
+	err = db.Get(&s, `SELECT coalesce(max("version"),0) AS m FROM schema_migrations`)
 	m = s.Max
 	return
 }
