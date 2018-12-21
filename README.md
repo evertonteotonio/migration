@@ -13,3 +13,10 @@ go run cmd/migration/main.go \
     -source=./fixtures \
     -migrate=up
 ```
+
+```console
+go run cmd/migration/main.go -db="postgres://postgres@localhost:5432/dbname?sslmode=disable" -source=./fixtures -migrate=down
+```
+
+
+
